@@ -544,6 +544,22 @@ class IamDataFrame(object):
                 meta = meta[keep_col_match(meta[col], values)]
             return return_df(meta, display, idx_cols)
 
+    def to_excel(self, excel_writer, filters={}, exclude_cat=[], **kwargs):
+        """Write timeseries data to Excel
+        (wrapper for `pandas.DataFrame.to_excel()`)
+
+        Parameters
+        ----------
+        excel_writer: string or ExcelWriter object
+             file path or existing ExcelWriter
+        filters: dict, optional
+            filter by model, scenario or category
+        exclude_cat: None or list of strings, default ['exclude']
+            exclude all scenarios from the listed categories
+        """
+        df = self.timeseries(filters, exclude_cat).reset_index()
+        df.to_excel(excel_writer, kwargs)
+
     def interpolate(self, year, exclude_cat=['exclude']):
         """Interpolate missing values in timeseries (linear interpolation)
 
