@@ -145,6 +145,12 @@ CHECK_AGG_REGIONAL_DF = pd.DataFrame([
 )
 
 
+@pytest.fixture(scope="function")
+def test_df(request):
+    df = IamDataFrame(data=TEST_DF.iloc[:2])
+    yield df
+
+
 TIME_AXES = [
     [2005, 2010],
     [2005.5, 2010.5],
@@ -152,11 +158,11 @@ TIME_AXES = [
     ["winter day", "summer night"]
 ]
 @pytest.fixture(scope="function", params=TIME_AXES)
-def test_df(request):
-    tdf = TEST_DF.iloc[:2]
-    tdf = tdf.rename({2005: request.param[0], 2010: request.param[1]}, axis="columns")
-    df = IamDataFrame(data=tdf)
-    yield df
+def time_format_df(test_df, request):
+    df = test_df.data
+    # change to time in future
+    df["year"] = 2*request.param
+    yield IamDataFrame(data=df)
 
 
 @pytest.fixture(scope="function")
