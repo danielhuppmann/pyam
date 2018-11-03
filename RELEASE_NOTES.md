@@ -1,6 +1,7 @@
 
 # Next Release
 
+- (#132)[https://github.com/IAMconsortium/pyam/pull/132] support time columns using the `datetime` format and additional `str` columns in `data`
 - (#128)[https://github.com/IAMconsortium/pyam/pull/128] add ability to directly read data from iiasa data sources
 - (#120)[https://github.com/IAMconsortium/pyam/pull/120] update install setup
 
