@@ -163,11 +163,14 @@ def test_filter_year(test_df):
     if "year" in test_df.data.columns:
         npt.assert_equal(obs['year'].unique(), 2005)
     else:
-        expected = pd.to_datetime('2005-06-17T00:00:00.0')
-        npt.assert_equal(obs['time'].unique(), np.array(expected, dtype=np.datetime64))
+        expected = np.array(pd.to_datetime('2005-06-17T00:00:00.0'),
+                            dtype=np.datetime64)
+        unique_time = obs['time'].unique()
+        assert len(unique_time) == 1
+        assert unique_time[0] == expected
 
 
-@pytest.mark.parametrize("test_month", [6, "Jun", "jun"])
+@pytest.mark.parametrize("test_month", [6, "Jun", "jun", ["Jun", "jun"]])
 def test_filter_month(test_df, test_month):
     if "year" in test_df.data.columns:
         error_msg = re.escape("filter by `month` not supported")
@@ -175,10 +178,14 @@ def test_filter_month(test_df, test_month):
             obs = test_df.filter(month=test_month)
     else:
         obs = test_df.filter(month=test_month)
-        npt.assert_equal(obs['time'].unique(), 2005)
+        expected = np.array(pd.to_datetime('2005-06-17T00:00:00.0'),
+                            dtype=np.datetime64)
+        unique_time = obs['time'].unique()
+        assert len(unique_time) == 1
+        assert unique_time[0] == expected
 
 
-@pytest.mark.parametrize("test_month", [6, "Jun", "jun"])
+@pytest.mark.parametrize("test_month", [6, "Jun", "jun", ["Jun", "jun"]])
 def test_filter_year_month(test_df, test_month):
     if "year" in test_df.data.columns:
         error_msg = re.escape("filter by `month` not supported")
@@ -186,42 +193,119 @@ def test_filter_year_month(test_df, test_month):
             obs = test_df.filter(year=2005, month=test_month)
     else:
         obs = test_df.filter(year=2005, month=test_month)
-        npt.assert_equal(obs['time'].unique(), 2005)
+        expected = np.array(pd.to_datetime('2005-06-17T00:00:00.0'),
+                            dtype=np.datetime64)
+        unique_time = obs['time'].unique()
+        assert len(unique_time) == 1
+        assert unique_time[0] == expected
 
 
-def test_filter_time_exact_match(test_df_time_col):
-    obs = test_df_time_col.filter(time=datetime.datetime(2005, 6, 17))
-    npt.assert_equal(obs['time'].unique(), datetime.datetime(2005, 6, 17))
+@pytest.mark.parametrize("test_day", [17, "Fri", "Friday", "friday", ["Fri", "fri"]])
+def test_filter_day(test_df, test_day):
+    if "year" in test_df.data.columns:
+        error_msg = re.escape("filter by `day` not supported")
+        with pytest.raises(ValueError, match=error_msg):
+            obs = test_df.filter(day=test_day)
+    else:
+        obs = test_df.filter(day=test_day)
+        expected = np.array(pd.to_datetime('2005-06-17T00:00:00.0'),
+                            dtype=np.datetime64)
+        unique_time = obs['time'].unique()
+        assert len(unique_time) == 1
+        assert unique_time[0] == expected
 
 
-def test_filter_time_range(test_df_time_col):
-    obs = test_df_time_col.filter(time=range(
-        datetime.datetime(2000, 6, 17),
-        datetime.datetime(2009, 6, 17)
-    ))
-    npt.assert_equal(obs['time'].unique(), datetime.datetime(2005, 6, 17))
+def test_filter_time_exact_match(test_df):
+    if "year" in test_df.data.columns:
+        error_msg = re.escape("`year` can only be filtered with ranges or ints or lists of ints")
+        with pytest.raises(TypeError, match=error_msg):
+            test_df.filter(year=datetime.datetime(2005, 6, 17))
+    else:
+        obs = test_df.filter(time=datetime.datetime(2005, 6, 17))
+        expected = np.array(pd.to_datetime('2005-06-17T00:00:00.0'),
+                            dtype=np.datetime64)
+        unique_time = obs['time'].unique()
+        assert len(unique_time) == 1
+        assert unique_time[0] == expected
 
 
-def test_filter_time_by_year(test_df_time_col):
-    obs = test_df_time_col.filter(year=range(2000, 2008))
-    npt.assert_equal(obs['time'].unique(), datetime.datetime(2005, 6, 17))
+def test_filter_time_range(test_df):
+    if "year" in test_df.data.columns:
+        obs = test_df.filter(year=range(
+            datetime.datetime(2000, 6, 17),
+            datetime.datetime(2009, 6, 17)
+        ))
+    else:
+        obs = test_df.filter(time=range(
+            datetime.datetime(2000, 6, 17),
+            datetime.datetime(2009, 6, 17)
+        ))
+    expected = np.array(pd.to_datetime('2005-06-17T00:00:00.0'),
+                        dtype=np.datetime64)
+    unique_time = obs['time'].unique()
+    assert len(unique_time) == 1
+    assert unique_time[0] == expected
 
 
-def test_filter_time_no_match(test_df_time_col):
-    obs = test_df_time_col.filter(time=datetime.datetime(2004, 6, 18))
-    assert obs is None
+def test_filter_time_range_year(test_df):
+    obs = test_df.filter(year=range(2000, 2008))
+    expected = np.array(pd.to_datetime('2005-06-17T00:00:00.0'),
+                        dtype=np.datetime64)
+    unique_time = obs['time'].unique()
+    assert len(unique_time) == 1
+    assert unique_time[0] == expected
 
 
-def test_filter_time_not_datetime_error(test_df_time_col):
-    error_msg = re.escape("time filtering must be performed with datetime objects")
-    with pytest.raises(ValueError, match=error_msg):
-        test_df_time_col.filter(time=2005)
+@pytest.mark.parametrize("month_range", [range(1, 6), range("Mar", "Jun")])
+def test_filter_time_range_month(test_df, month_range):
+    obs = test_df.filter(month=month_range)
+    expected = np.array(pd.to_datetime('2005-06-17T00:00:00.0'),
+                        dtype=np.datetime64)
+    unique_time = obs['time'].unique()
+    assert len(unique_time) == 1
+    assert unique_time[0] == expected
 
 
-def test_filter_time_not_datetime_range_error(test_df_time_col):
-    error_msg = re.escape("time filtering must be performed with datetime objects")
-    with pytest.raises(ValueError, match=error_msg):
-        test_df_time_col.filter(time=range(2000, 2008))
+@pytest.mark.parametrize("day_range", [range(14, 20), range("Thu", "Sat")])
+def test_filter_time_range_day(test_df, day_range):
+    obs = test_df.filter(day=day_range)
+    expected = np.array(pd.to_datetime('2005-06-17T00:00:00.0'),
+                        dtype=np.datetime64)
+    unique_time = obs['time'].unique()
+    assert len(unique_time) == 1
+    assert unique_time[0] == expected
+
+
+def test_filter_time_no_match(test_df):
+    if "year" in test_df.data.columns:
+        error_msg = re.escape("`year` can only be filtered with ranges or ints or lists of ints")
+        with pytest.raises(TypeError, match=error_msg):
+            test_df.filter(year=datetime.datetime(2004, 6, 18))
+    else:
+        obs = test_df.filter(time=datetime.datetime(2004, 6, 18))
+        assert obs is None
+
+
+def test_filter_time_not_datetime_error(test_df):
+    if "year" in test_df.data.columns:
+        error_msg = re.escape("`time` not in dataframe")
+        with pytest.raises(KeyError, match=error_msg):
+            test_df.filter(time=datetime.datetime(2004, 6, 18))
+    else:
+        error_msg = re.escape("time filtering must be performed with datetime objects")
+        with pytest.raises(ValueError, match=error_msg):
+            test_df.filter(time=2005)
+
+
+def test_filter_time_not_datetime_range_error(test_df):
+    if "year" in test_df.data.columns:
+        error_msg = re.escape("`time` not in dataframe")
+        with pytest.raises(KeyError, match=error_msg):
+            test_df.filter(time=range(2000, 2008))
+    else:
+        error_msg = re.escape("time filtering must be performed with datetime objects")
+        with pytest.raises(ValueError, match=error_msg):
+            test_df.filter(time=range(2000, 2008))
 
 
 def test_filter_as_kwarg(meta_df):

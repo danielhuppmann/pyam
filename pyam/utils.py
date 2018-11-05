@@ -5,6 +5,7 @@ import six
 import re
 import glob
 import collections
+import datetime
 
 import numpy as np
 import pandas as pd
@@ -285,12 +286,22 @@ def pattern_match(data, values, level=None, regexp=False, has_nan=True):
             matches |= data == s
     return matches
 
-
+# rename to isin match
 def years_match(data, years):
     """
     matching of year columns for data filtering
+
+    matching of data if isin input
+
+    Parameters
+    ----------
+    data :obj:`pd.Series`
+        Pandas Series to filter
+
+    input
+        Value to search for. This input can be a list or a single value.
     """
-    years = [years] if isinstance(years, int) else years
+    years = [years] if isinstance(years, (int, str)) else years
     return data.isin(years)
 
 
@@ -298,10 +309,8 @@ def datetime_match(data, times):
     """
     matching of time columns for data filtering
     """
-    import pdb
-    pdb.set_trace()
-    years = [years] if isinstance(years, int) else years
-    return data.isin(years)
+    times = [times] if isinstance(times, datetime.datetime) else times
+    return data.isin(times)
 
 
 def cast_years_to_int(x, index=False):

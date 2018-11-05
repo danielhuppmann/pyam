@@ -147,9 +147,9 @@ CHECK_AGG_REGIONAL_DF = pd.DataFrame([
 
 TIME_AXES = [
     [2005, 2010],
-    [datetime(2005, 6, 17), datetime(2010, 6, 17)],
-    ['2005-06-17', '2010-06-17'],
-    ['2005-06-17 00:00:00', '2010-06-17 00:00:00']
+    [datetime(2005, 6, 17), datetime(2010, 7, 21)],
+    ['2005-06-17', '2010-07-21'],
+    ['2005-06-17 00:00:00', '2010-07-21 00:00:00']
 ]
 
 
@@ -160,12 +160,6 @@ def test_df(request):
                      axis="columns")
     df = IamDataFrame(data=tdf)
     yield df
-
-
-@pytest.fixture(scope="function")
-def test_df_time_col(test_df):
-    tdf = test_df.data.copy().rename({"year": "time"}, axis="columns")
-    yield IamDataFrame(tdf)
 
 
 @pytest.fixture(scope="function")
