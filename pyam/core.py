@@ -1121,8 +1121,6 @@ def _apply_filters(data, meta, filters):
 
     # filter by columns and list of values
     for col, values in filters.items():
-        import pdb
-        pdb.set_trace()
         if col in meta.columns:
             matches = pattern_match(meta[col], values, regexp=regexp)
             cat_idx = meta[matches].index
@@ -1133,9 +1131,15 @@ def _apply_filters(data, meta, filters):
             keep_col = pattern_match(data[col], values, level, regexp)
 
         elif col == 'year':
-            import pdb
-            pdb.set_trace()
-            keep_col = years_match(data[col], values)
+            try:
+                keep_col = years_match(data[col], values)
+            except KeyError as exc:
+                if str(exc) != "'year'":
+                    raise exc
+                elif 'time' in data.columns:
+                    keep_col = years_match(data['time'].apply(lambda x: x.year), values)
+                else:
+                    _raise_filter_error(col)
 
         elif col == 'time':
             keep_col = datetime_match(data[col], values)
@@ -1151,11 +1155,13 @@ def _apply_filters(data, meta, filters):
             keep_col = pattern_match(data[col], values, regexp=regexp)
 
         else:
-            raise ValueError('filter by `{}` not supported'.format(col))
+            _raise_filter_error(col)
         keep &= keep_col
 
     return keep
 
+def _raise_filter_error(col):
+    raise ValueError('filter by `{}` not supported'.format(col))
 
 def _check_rows(rows, check, in_range=True, return_test='any'):
     """Check all rows to be in/out of a certain range and provide testing on

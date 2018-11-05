@@ -162,7 +162,7 @@ def test_df(request):
     yield df
 
 
-@pytest.fixutre(scope="function")
+@pytest.fixture(scope="function")
 def test_df_time_col(test_df):
     tdf = test_df.data.copy().rename({"year": "time"}, axis="columns")
     yield IamDataFrame(tdf)

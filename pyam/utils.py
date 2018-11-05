@@ -294,9 +294,9 @@ def years_match(data, years):
     return data.isin(years)
 
 
-def datetime_match(data, years):
+def datetime_match(data, times):
     """
-    matching of year columns for data filtering
+    matching of time columns for data filtering
     """
     import pdb
     pdb.set_trace()

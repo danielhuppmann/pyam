@@ -163,7 +163,8 @@ def test_filter_year(test_df):
     if "year" in test_df.data.columns:
         npt.assert_equal(obs['year'].unique(), 2005)
     else:
-        npt.assert_equal(obs['time'].unique(), 2005)
+        expected = pd.to_datetime('2005-06-17T00:00:00.0')
+        npt.assert_equal(obs['time'].unique(), np.array(expected, dtype=np.datetime64))
 
 
 @pytest.mark.parametrize("test_month", [6, "Jun", "jun"])
