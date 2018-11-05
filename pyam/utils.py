@@ -294,6 +294,16 @@ def years_match(data, years):
     return data.isin(years)
 
 
+def datetime_match(data, years):
+    """
+    matching of year columns for data filtering
+    """
+    import pdb
+    pdb.set_trace()
+    years = [years] if isinstance(years, int) else years
+    return data.isin(years)
+
+
 def cast_years_to_int(x, index=False):
     """Formatting series or timeseries columns to int and checking validity.
     If `index=False`, the function works on the `pd.Series x`; else,

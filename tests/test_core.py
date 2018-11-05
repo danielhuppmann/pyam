@@ -1,6 +1,8 @@
 import os
 import copy
 import pytest
+import re
+import datetime
 
 import numpy as np
 import pandas as pd
@@ -61,9 +63,11 @@ def test_init_df_with_extra_col(test_pd_df):
     assert df.extra_cols == [extra_col]
 
     # what do we want to do here with the extra cols?
+    # should they be kept when we convert to timeseries?
     pd.testing.assert_frame_equal(df.timeseries().reset_index(), tdf)
 
-    # what do we want to do here
+    # what do we want to do here?
+    # should the extra cols be part of metadata?
     exp_meta = pd.DataFrame([
         ['b_model', 'b_scen', extra_value, False],
         ['b_model', 'a_scenario2', extra_value, False],
@@ -156,17 +160,68 @@ def test_filter_error(test_df):
 
 def test_filter_year(test_df):
     obs = test_df.filter(year=2005)
-    npt.assert_equal(obs['year'].unique(), 2005)
+    if "year" in test_df.data.columns:
+        npt.assert_equal(obs['year'].unique(), 2005)
+    else:
+        npt.assert_equal(obs['time'].unique(), 2005)
 
-def test_filter_time(test_df):
-    import pdb
-    pdb.set_trace()
-    tdf = test_df.data.copy()
-    tdf = tdf.rename({"year": "time"}, axis="columns")
-    tdf = IamDataFrame(tdf)
 
-    obs = tdf.filter(time=2005)
-    npt.assert_equal(obs['year'].unique(), 2005)
+@pytest.mark.parametrize("test_month", [6, "Jun", "jun"])
+def test_filter_month(test_df, test_month):
+    if "year" in test_df.data.columns:
+        error_msg = re.escape("filter by `month` not supported")
+        with pytest.raises(ValueError, match=error_msg):
+            obs = test_df.filter(month=test_month)
+    else:
+        obs = test_df.filter(month=test_month)
+        npt.assert_equal(obs['time'].unique(), 2005)
+
+
+@pytest.mark.parametrize("test_month", [6, "Jun", "jun"])
+def test_filter_year_month(test_df, test_month):
+    if "year" in test_df.data.columns:
+        error_msg = re.escape("filter by `month` not supported")
+        with pytest.raises(ValueError, match=error_msg):
+            obs = test_df.filter(year=2005, month=test_month)
+    else:
+        obs = test_df.filter(year=2005, month=test_month)
+        npt.assert_equal(obs['time'].unique(), 2005)
+
+
+def test_filter_time_exact_match(test_df_time_col):
+    obs = test_df_time_col.filter(time=datetime.datetime(2005, 6, 17))
+    npt.assert_equal(obs['time'].unique(), datetime.datetime(2005, 6, 17))
+
+
+def test_filter_time_range(test_df_time_col):
+    obs = test_df_time_col.filter(time=range(
+        datetime.datetime(2000, 6, 17),
+        datetime.datetime(2009, 6, 17)
+    ))
+    npt.assert_equal(obs['time'].unique(), datetime.datetime(2005, 6, 17))
+
+
+def test_filter_time_by_year(test_df_time_col):
+    obs = test_df_time_col.filter(year=range(2000, 2008))
+    npt.assert_equal(obs['time'].unique(), datetime.datetime(2005, 6, 17))
+
+
+def test_filter_time_no_match(test_df_time_col):
+    obs = test_df_time_col.filter(time=datetime.datetime(2004, 6, 18))
+    assert obs is None
+
+
+def test_filter_time_not_datetime_error(test_df_time_col):
+    error_msg = re.escape("time filtering must be performed with datetime objects")
+    with pytest.raises(ValueError, match=error_msg):
+        test_df_time_col.filter(time=2005)
+
+
+def test_filter_time_not_datetime_range_error(test_df_time_col):
+    error_msg = re.escape("time filtering must be performed with datetime objects")
+    with pytest.raises(ValueError, match=error_msg):
+        test_df_time_col.filter(time=range(2000, 2008))
+
 
 def test_filter_as_kwarg(meta_df):
     obs = list(meta_df.filter(variable='Primary Energy|Coal').scenarios())

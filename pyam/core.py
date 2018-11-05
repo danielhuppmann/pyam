@@ -26,6 +26,7 @@ from pyam.utils import (
     format_data,
     pattern_match,
     years_match,
+    datetime_match,
     isstr,
     islistable,
     META_IDX,
@@ -1120,6 +1121,8 @@ def _apply_filters(data, meta, filters):
 
     # filter by columns and list of values
     for col, values in filters.items():
+        import pdb
+        pdb.set_trace()
         if col in meta.columns:
             matches = pattern_match(meta[col], values, regexp=regexp)
             cat_idx = meta[matches].index
@@ -1130,7 +1133,12 @@ def _apply_filters(data, meta, filters):
             keep_col = pattern_match(data[col], values, level, regexp)
 
         elif col == 'year':
+            import pdb
+            pdb.set_trace()
             keep_col = years_match(data[col], values)
+
+        elif col == 'time':
+            keep_col = datetime_match(data[col], values)
 
         elif col == 'level':
             if 'variable' not in filters.keys():
