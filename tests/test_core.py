@@ -154,6 +154,20 @@ def test_filter_error(test_df):
     pytest.raises(ValueError, test_df.filter, foo='foo')
 
 
+def test_filter_year(test_df):
+    obs = test_df.filter(year=2005)
+    npt.assert_equal(obs['year'].unique(), 2005)
+
+def test_filter_time(test_df):
+    import pdb
+    pdb.set_trace()
+    tdf = test_df.data.copy()
+    tdf = tdf.rename({"year": "time"}, axis="columns")
+    tdf = IamDataFrame(tdf)
+
+    obs = tdf.filter(time=2005)
+    npt.assert_equal(obs['year'].unique(), 2005)
+
 def test_filter_as_kwarg(meta_df):
     obs = list(meta_df.filter(variable='Primary Energy|Coal').scenarios())
     assert obs == ['a_scenario']
