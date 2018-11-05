@@ -49,6 +49,29 @@ def test_init_df_from_timeseries(test_df):
     pd.testing.assert_frame_equal(df.timeseries(), test_df.timeseries())
 
 
+def test_init_df_with_extra_col(test_pd_df):
+    tdf = test_pd_df.copy()
+
+    extra_col = "climate model"
+    extra_value = "scm_model"
+    tdf[extra_col] = extra_value
+
+    df = IamDataFrame(tdf)
+
+    assert df.extra_cols == [extra_col]
+
+    # what do we want to do here with the extra cols?
+    pd.testing.assert_frame_equal(df.timeseries().reset_index(), tdf)
+
+    # what do we want to do here
+    exp_meta = pd.DataFrame([
+        ['b_model', 'b_scen', extra_value, False],
+        ['b_model', 'a_scenario2', extra_value, False],
+    ], columns=['model', 'scenario', extra_col, 'exclude']
+    ).set_index(['model', 'scenario', extra_col])
+    pd.testing.assert_frame_equal(df.meta, exp_meta)
+
+
 def test_get_item(test_df):
     assert test_df['model'].unique() == ['a_model']
 
