@@ -4,7 +4,6 @@ import itertools
 import os
 import sys
 import warnings
-import time
 
 import numpy as np
 import pandas as pd
@@ -27,7 +26,6 @@ from pyam.utils import (
     format_data,
     pattern_match,
     years_match,
-    datetime_match,
     isstr,
     islistable,
     META_IDX,
@@ -1132,56 +1130,7 @@ def _apply_filters(data, meta, filters):
             keep_col = pattern_match(data[col], values, level, regexp)
 
         elif col == 'year':
-            if not isinstance(values, int):
-                raise TypeError("`year` can only be filtered with ranges or ints or lists of ints")
-            elif not isinstance(values[0, int]):
-                raise TypeError("`year` can only be filtered with ints or lists of ints")
-            try:
-                keep_col = years_match(data[col], values)
-            except KeyError as exc:
-                if str(exc) != "'year'":
-                    raise exc
-                elif 'time' in data.columns:
-                    keep_col = years_match(data['time'].apply(lambda x: x.year), values)
-                else:
-                    _raise_filter_error(col)
-
-        elif col == 'month':
-            if 'time' not in data.columns:
-                _raise_filter_error(col)
-            else:
-                months = data['time'].apply(lambda x: x.month)
-                if isinstance(values, int):
-                    pass
-                elif isinstance(values, str):
-                    values = time.strptime(values, '%b').tm_mon
-                elif isinstance(values[0], str):
-                    values = [time.strptime(v, '%b').tm_mon for v in values]
-
-                keep_col = years_match(months, values)
-
-        elif col == 'day':
-            if 'time' not in data.columns:
-                _raise_filter_error(col)
-            else:
-                if isinstance(values, int):
-                    days = data['time'].apply(lambda x: x.day)
-                elif isinstance(values, str):
-                    try:
-                        values = time.strptime(values, '%a').tm_wday
-                    except ValueError:
-                        values = time.strptime(values, '%A').tm_wday
-                    days = data['time'].apply(lambda x: x.weekday())
-                elif isinstance(values[0], str):
-                    try:
-                        values = [time.strptime(v, '%a').tm_wday for v in values]
-                    except:
-                        values = [time.strptime(v, '%A').tm_wday for v in values]
-                    days = data['time'].apply(lambda x: x.weekday())
-                keep_col = years_match(days, values)
-
-        elif col == 'time':
-            keep_col = datetime_match(data[col], values)
+            keep_col = years_match(data[col], values)
 
         elif col == 'level':
             if 'variable' not in filters.keys():
@@ -1194,14 +1143,11 @@ def _apply_filters(data, meta, filters):
             keep_col = pattern_match(data[col], values, regexp=regexp)
 
         else:
-            _raise_filter_error(col)
-
+            raise ValueError('filter by `{}` not supported'.format(col))
         keep &= keep_col
 
     return keep
 
-def _raise_filter_error(col):
-    raise ValueError('filter by `{}` not supported'.format(col))
 
 def _check_rows(rows, check, in_range=True, return_test='any'):
     """Check all rows to be in/out of a certain range and provide testing on

@@ -51,29 +51,29 @@ def test_init_df_from_timeseries(test_df):
     pd.testing.assert_frame_equal(df.timeseries(), test_df.timeseries())
 
 
-def test_init_df_with_extra_col(test_pd_df):
-    tdf = test_pd_df.copy()
+# def test_init_df_with_extra_col(test_pd_df):
+#     tdf = test_pd_df.copy()
 
-    extra_col = "climate model"
-    extra_value = "scm_model"
-    tdf[extra_col] = extra_value
+#     extra_col = "climate model"
+#     extra_value = "scm_model"
+#     tdf[extra_col] = extra_value
 
-    df = IamDataFrame(tdf)
+#     df = IamDataFrame(tdf)
 
-    assert df.extra_cols == [extra_col]
+#     assert df.extra_cols == [extra_col]
 
-    # what do we want to do here with the extra cols?
-    # should they be kept when we convert to timeseries?
-    pd.testing.assert_frame_equal(df.timeseries().reset_index(), tdf)
+#     # what do we want to do here with the extra cols?
+#     # should they be kept when we convert to timeseries?
+#     pd.testing.assert_frame_equal(df.timeseries().reset_index(), tdf)
 
-    # what do we want to do here?
-    # should the extra cols be part of metadata?
-    exp_meta = pd.DataFrame([
-        ['b_model', 'b_scen', extra_value, False],
-        ['b_model', 'a_scenario2', extra_value, False],
-    ], columns=['model', 'scenario', extra_col, 'exclude']
-    ).set_index(['model', 'scenario', extra_col])
-    pd.testing.assert_frame_equal(df.meta, exp_meta)
+#     # what do we want to do here?
+#     # should the extra cols be part of metadata?
+#     exp_meta = pd.DataFrame([
+#         ['b_model', 'b_scen', extra_value, False],
+#         ['b_model', 'a_scenario2', extra_value, False],
+#     ], columns=['model', 'scenario', extra_col, 'exclude']
+#     ).set_index(['model', 'scenario', extra_col])
+#     pd.testing.assert_frame_equal(df.meta, exp_meta)
 
 
 def test_get_item(test_df):
@@ -215,6 +215,21 @@ def test_filter_day(test_df, test_day):
         assert unique_time[0] == expected
 
 
+@pytest.mark.parametrize("test_hour", [12])
+def test_filter_hour(test_df, test_hour):
+    if "year" in test_df.data.columns:
+        error_msg = re.escape("filter by `hour` not supported")
+        with pytest.raises(ValueError, match=error_msg):
+            obs = test_df.filter(hour=test_hour)
+    else:
+        obs = test_df.filter(hour=test_hour)
+        expected = np.array(pd.to_datetime('2010-07-21T12:00:00.0'),
+                            dtype=np.datetime64)
+        unique_time = obs['time'].unique()
+        assert len(unique_time) == 1
+        assert unique_time[0] == expected
+
+
 def test_filter_time_exact_match(test_df):
     if "year" in test_df.data.columns:
         error_msg = re.escape("`year` can only be filtered with ranges or ints or lists of ints")
@@ -256,7 +271,7 @@ def test_filter_time_range_year(test_df):
     assert unique_time[0] == expected
 
 
-@pytest.mark.parametrize("month_range", [range(1, 6), range("Mar", "Jun")])
+@pytest.mark.parametrize("month_range", [range(1, 6), "Mar-Jun"])
 def test_filter_time_range_month(test_df, month_range):
     obs = test_df.filter(month=month_range)
     expected = np.array(pd.to_datetime('2005-06-17T00:00:00.0'),
@@ -266,10 +281,20 @@ def test_filter_time_range_month(test_df, month_range):
     assert unique_time[0] == expected
 
 
-@pytest.mark.parametrize("day_range", [range(14, 20), range("Thu", "Sat")])
+@pytest.mark.parametrize("day_range", [range(14, 20), "Thu-Sat"])
 def test_filter_time_range_day(test_df, day_range):
     obs = test_df.filter(day=day_range)
     expected = np.array(pd.to_datetime('2005-06-17T00:00:00.0'),
+                        dtype=np.datetime64)
+    unique_time = obs['time'].unique()
+    assert len(unique_time) == 1
+    assert unique_time[0] == expected
+
+
+@pytest.mark.parametrize("hour_range", [range(10, 14)])
+def test_filter_time_range_hour(test_df, hour_range):
+    obs = test_df.filter(day=hour_range)
+    expected = np.array(pd.to_datetime('2010-07-21T12:00:00.0'),
                         dtype=np.datetime64)
     unique_time = obs['time'].unique()
     assert len(unique_time) == 1
