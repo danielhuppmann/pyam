@@ -26,6 +26,10 @@ from pyam.utils import (
     format_data,
     pattern_match,
     years_match,
+    month_match,
+    hour_match,
+    day_match,
+    datetime_match,
     isstr,
     islistable,
     META_IDX,
@@ -1130,7 +1134,45 @@ def _apply_filters(data, meta, filters):
             keep_col = pattern_match(data[col], values, level, regexp)
 
         elif col == 'year':
-            keep_col = years_match(data[col], values)
+            try:
+                keep_col = years_match(data[col], values)
+            except KeyError as exc:
+                if str(exc) != "'year'":
+                    raise exc
+                elif 'time' in data.columns:
+                    keep_col = years_match(data['time'].apply(lambda x: x.year),
+                                           values)
+                else:
+                    _raise_filter_error(col)
+
+        elif col == 'month':
+            if 'time' not in data.columns:
+                _raise_filter_error(col)
+            else:
+                keep_col = month_match(data['time'].apply(lambda x: x.month),
+                                       values)
+
+        elif col == 'day':
+            if 'time' not in data.columns:
+                _raise_filter_error(col)
+            else:
+                wday = (isinstance(values, str)
+                        or (isinstance(values, list) and isinstance(values[0], str)))
+                if wday:
+                    days = data['time'].apply(lambda x: x.weekday())
+                else:  # ints or list of ints
+                    days = data['time'].apply(lambda x: x.day)
+                keep_col = day_match(days, values)
+
+        elif col == 'hour':
+            if 'time' not in data.columns:
+                _raise_filter_error(col)
+            else:
+                keep_col = hour_match(data['time'].apply(lambda x: x.hour),
+                                       values)
+
+        elif col == 'time':
+            keep_col = datetime_match(data[col], values)
 
         elif col == 'level':
             if 'variable' not in filters.keys():
@@ -1143,11 +1185,13 @@ def _apply_filters(data, meta, filters):
             keep_col = pattern_match(data[col], values, regexp=regexp)
 
         else:
-            raise ValueError('filter by `{}` not supported'.format(col))
+            _raise_filter_error(col)
         keep &= keep_col
 
     return keep
 
+def _raise_filter_error(col):
+    raise ValueError('filter by `{}` not supported'.format(col))
 
 def _check_rows(rows, check, in_range=True, return_test='any'):
     """Check all rows to be in/out of a certain range and provide testing on
