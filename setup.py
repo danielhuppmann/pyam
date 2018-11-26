@@ -96,7 +96,14 @@ def main():
         "six",
     ]
     extra_requirements = {
-        'tests': ['coverage', 'pytest', 'pytest-cov', 'pytest-mpl'],
+        'tests': [
+            'coverage',
+            'pytest',
+            'pytest-cov',
+            'pytest-mpl',
+            'notebook',
+            'jupyter_contrib_nbextensions'
+        ],
     }
     setup_kwargs = {
         "name": "pyam-iamc",

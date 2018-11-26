@@ -61,13 +61,8 @@ def test_init_df_with_extra_col(test_pd_df):
     df = IamDataFrame(tdf)
 
     assert df.extra_cols == [extra_col]
+    pd.testing.assert_frame_equal(df.timeseries().reset_index(), tdf, check_like=True)
 
-    # what do we want to do here with the extra cols?
-    # should they be kept when we convert to timeseries?
-    pd.testing.assert_frame_equal(df.timeseries().reset_index(), tdf)
-
-    # what do we want to do here?
-    # should the extra cols be part of metadata?
     exp_meta = pd.DataFrame([
         ['b_model', 'b_scen', extra_value, False],
         ['b_model', 'a_scenario2', extra_value, False],
