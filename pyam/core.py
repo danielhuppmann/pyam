@@ -1326,8 +1326,13 @@ class IamDataFrame(object):
 
             elif col == 'variable':
                 level = filters['level'] if 'level' in filters else None
-                keep_col = pattern_match(self._data.index.get_level_values(3),
-                                         values, level, regexp)
+                col_values = pd.Series(get_index_levels(self._data, col))
+                where = pattern_match(col_values, values, level, regexp)
+
+                keep_col = np.array([False] * len(self))
+                for v in col_values[where]:
+                    keep_val = self._data.index.get_loc_level(v, level=col)[0]
+                    keep_col = np.logical_or(keep_col, keep_val)
 
             elif col == 'year':
                 _data = self.data[col] if self.time_col != 'time' \
