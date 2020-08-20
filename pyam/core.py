@@ -1367,13 +1367,17 @@ class IamDataFrame(object):
 
             elif col == 'level':
                 if 'variable' not in filters.keys():
-                    keep_col = find_depth(self._data.index.get_level_values(3),
-                                          level=values)
+                    v = 'variable'
+                    col_values = pd.Series(get_index_levels(self._data, v))
+                    where = find_depth(col_values, level=values)
+                    keep_col = get_keep_col(self._data, col_values[where], v)
                 else:
                     continue
 
-            elif col in self.data.columns:
-                keep_col = pattern_match(self.data[col], values, regexp=regexp)
+            elif col in self._data.index.names:
+                col_values = pd.Series(get_index_levels(self._data, col))
+                where = pattern_match(col_values, values, regexp=regexp)
+                keep_col = get_keep_col(self._data, col_values[where], col)
 
             else:
                 _raise_filter_error(col)
