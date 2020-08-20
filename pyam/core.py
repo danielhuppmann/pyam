@@ -1322,8 +1322,7 @@ class IamDataFrame(object):
                 matches = pattern_match(self.meta[col], values, regexp=regexp,
                                         has_nan=True)
                 cat_idx = self.meta[matches].index
-                keep_col = (self.data[META_IDX].set_index(META_IDX)
-                                .index.isin(cat_idx))
+                keep_col = _make_index(self._data, unique=False).isin(cat_idx)
 
             elif col == 'variable':
                 level = filters['level'] if 'level' in filters else None
@@ -1807,15 +1806,17 @@ def _apply_criteria(df, criteria, **kwargs):
     return df
 
 
-def _make_index(df, cols=META_IDX):
-    """Create an index from the columns of a dataframe or series"""
+def _make_index(df, cols=META_IDX, unique=True):
+    """Create an index from the columns/index of a dataframe or series"""
     def _get_col(c):
         try:
             return df.index.get_level_values(c)
         except KeyError:
             return df[c]
 
-    index = pd.unique(list(zip(*[_get_col(col) for col in cols])))
+    index = list(zip(*[_get_col(col) for col in cols]))
+    if unique:
+        index = pd.unique(index)
     return pd.MultiIndex.from_tuples(index, names=tuple(cols))
 
 
