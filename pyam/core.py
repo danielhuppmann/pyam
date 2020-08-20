@@ -34,6 +34,7 @@ from pyam.utils import (
     format_data,
     format_time_col,
     merge_meta,
+    get_keep_col,
     find_depth,
     pattern_match,
     years_match,
@@ -1329,7 +1330,7 @@ class IamDataFrame(object):
                 col_values = pd.Series(get_index_levels(self._data, col))
                 where = pattern_match(col_values, values, level, regexp)
 
-                keep_col = self._get_keep_col(col_values[where], col)
+                keep_col = get_keep_col(self._data, col_values[where], col)
 
             elif col == 'year':
                 _data = self.data[col] if self.time_col != 'time' \
@@ -1380,14 +1381,6 @@ class IamDataFrame(object):
             keep = np.logical_and(keep, keep_col)
 
         return keep
-
-    def _get_keep_col(self, values, col):
-        """Get the a list of booleans by filtering on values"""
-        keep_col = np.array([False] * len(self))
-        for v in values:
-            keep_col = np.logical_or(
-                keep_col, self._data.index.get_loc_level(v, level=col)[0])
-        return keep_col
 
     def col_apply(self, col, func, *args, **kwargs):
         """Apply a function to a column of data or meta
