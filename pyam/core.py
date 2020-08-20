@@ -1293,7 +1293,7 @@ class IamDataFrame(object):
         ret._data = ret._data[list(_keep)]
         ret._data.index = ret._data.index.remove_unused_levels()
 
-        idx = _make_index(ret.data)
+        idx = _make_index(ret._data)
         if len(idx) == 0:
             logger.warning('Filtered IamDataFrame is empty!')
         ret.meta = ret.meta.loc[idx]
