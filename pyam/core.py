@@ -1304,13 +1304,13 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        filters: dict
+        filters : dict
             dictionary of filters of the format (`{col: values}`);
             uses a pseudo-regexp syntax by default,
             but accepts `regexp: True` in the dictionary to use regexp directly
         """
         regexp = filters.pop('regexp', False)
-        keep = np.array([True] * len(self.data))
+        keep = np.array([True] * len(self))
 
         # filter by columns and list of values
         for col, values in filters.items():
