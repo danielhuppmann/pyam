@@ -1190,7 +1190,7 @@ class IamDataFrame(object):
                     "Recursive aggregation only supported with `method='sum'!"
                 )
 
-            _df = _aggregate_recursive(self, variable)
+            _df = IamDataFrame(_aggregate_recursive(self, variable), meta=self.meta)
         else:
             _df = _aggregate(self, variable, components=components, method=method)
 
