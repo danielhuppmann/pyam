@@ -1194,14 +1194,12 @@ class IamDataFrame(object):
         else:
             _df = _aggregate(self, variable, components=components, method=method)
 
-        # return None if there is nothing to aggregate
-        if _df is None:
-            return None
-
         # else, append to `self` or return as `IamDataFrame`
         if append is True:
             self.append(_df, inplace=True)
         else:
+            if _df is None or _df.empty:
+                return _empty_iamframe(self._LONG_IDX + ["value"])
             return IamDataFrame(_df, meta=self.meta)
 
     def check_aggregate(
