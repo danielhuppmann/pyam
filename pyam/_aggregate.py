@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import logging
+from itertools import compress
 
 from pyam.index import replace_index_values
 from pyam.logging import adjust_log_level
@@ -59,16 +60,19 @@ def _aggregate(df, variable, components=None, method=np.sum):
 def _aggregate_recursive(df, variable):
     """Recursive aggregation along the variable tree"""
 
-    # downselect to components of `variable`
-    df = df.filter(variable=f"{variable}|*")
+    # downselect to components of `variable`, initialize list for aggregated (new) data
+    _df = df.filter(variable=f"{variable}|*")
     data_list = []
 
-    # iterate over variables (bottom-up) and aggregate all components
-    for d in reversed(range(1, max(find_depth(df.variable)) + 1)):
-        vars = set([reduce_hierarchy(v, -1) for v in df.variable if find_depth(v) == d])
-        _df = df.aggregate(variable=vars)
-        df.append(_df, inplace=True)
-        data_list.append(_df._data)
+    # iterate over variables (bottom-up) and aggregate all components up to `variable`
+    for d in reversed(range(find_depth(variable), max(find_depth(_df.variable)))):
+        components = compress(_df.variable, find_depth(_df.variable, level=d+1))
+        var_list = set([reduce_hierarchy(v, -1) for v in components])
+
+        # a temporary dataframe allows to distinguish between full data and new data
+        temp_df = _df.aggregate(variable=var_list)
+        _df.append(temp_df, inplace=True)
+        data_list.append(temp_df._data)
 
     return pd.concat(data_list)
 
