@@ -1158,28 +1158,30 @@ class IamDataFrame(object):
     def aggregate(
         self, variable, components=None, method="sum", recursive=False, append=False
     ):
-        """Aggregate timeseries components or sub-categories within each region
+        """Aggregate timeseries by components or subcategories within each region
 
         Parameters
         ----------
         variable : str or list of str
-            variable(s) for which the aggregate will be computed
+            Variable(s) for which the aggregate will be computed.
         components : list of str, optional
-            list of variables to aggregate, defaults to all sub-categories
-            of `variable`
+            Components to be aggregate, defaults to all subcategories of `variable`.
         method : func or str, optional
-            method to use for aggregation,
-            e.g. :func:`numpy.mean`, :func:`numpy.sum`, 'min', 'max'
+            Aggregation method, e.g. :func:`numpy.mean`, :func:`numpy.sum`, 'min', 'max'
         recursive : bool, optional
-            iterate recursively over all subcategories of `variable`
+            Iterate recursively (bottom-up) over all subcategories of `variable`.
         append : bool, optional
-            append the aggregate timeseries to `self` and return None,
-            else return aggregate timeseries as new :class:`IamDataFrame`
+            Whether to append aggregated timeseries data to this instance.
+
+        Returns
+        -------
+        :class:`IamDataFrame` or **None**
+            Aggregated timeseries data or None if `inplace=True`.
 
         Notes
         -----
-        The aggregation function interprets any missing values
-        (:any:`numpy.nan`) for individual components as 0.
+        The aggregation function interprets any missing values (:any:`numpy.nan`)
+        for individual components as 0.
         """
 
         if recursive is True:
