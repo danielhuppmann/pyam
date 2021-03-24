@@ -1189,7 +1189,7 @@ class IamDataFrame(object):
                 raise ValueError("Recursive aggregation cannot take `components`!")
             if method != "sum":
                 raise ValueError(
-                    "Recursive aggregation only supported with `method='sum'!"
+                    "Recursive aggregation only supported with `method='sum'`!"
                 )
 
             _df = IamDataFrame(_aggregate_recursive(self, variable), meta=self.meta)
