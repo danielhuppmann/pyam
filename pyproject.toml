@@ -1,0 +1,85 @@
+[project]
+name = "pyam"
+authors = "AUTHORS.rst"
+license = "Apache-2.0"
+description = "Analysis & visualization of integrated-assessment scenarios"
+readme = "README.md"
+requires-python = ">=3.7"
+dynamic = ["version"]
+
+dependencies = [
+    "iam-units >= 2020.4.21",
+    "numpy >= 1.19.0",
+    "requests",
+    "openpyxl",
+    "pandas >= 1.1.1",
+    "pint",
+    "PyYAML",
+    "matplotlib >= 3.2.0",
+    "seaborn",
+    "six",
+    "xlrd >= 2.0",
+    "pint >= 0.11",
+    "setuptools >= 41",
+    "setuptools_scm",
+    # required explicitly for Python 3.7
+    "importlib_metadata",
+]
+
+[project.urls]
+documentation = "https://pyam-iamc.readthedocs.io/"
+repository = "https://github.com/iamconsortium/pyam"
+
+[build-system]
+requires = [
+    "setuptools>=45",
+    "setuptools_scm>=6.2"
+]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+
+[project.optional-dependencies]
+tests = [
+    "coverage",
+    "coveralls",
+    "pytest < 6.0.0",
+    "pytest-cov",
+    "pytest-mpl < 0.12",
+]
+optional_plotting = [
+    "plotly",
+]
+optional_io_formats = [
+    "datapackage",
+    "pandas-datareader",
+    "unfccc_di_api >= 2.0",
+]
+deploy = [
+    "twine",
+    "wheel",
+    "setuptools",
+    "setuptools_scm",
+]
+tutorials = [
+    "pypandoc",
+    "nbformat",
+    "nbconvert",
+    "jupyter_client",
+    "ipykernel",
+]
+docs = [
+    "sphinx",
+    "nbsphinx",
+    "sphinx-gallery",
+    "cloud_sptheme",
+    "pillow",
+    "sphinxcontrib-bibtex < 2.0",
+    "sphinxcontrib-programoutput",
+    "numpydoc",
+    "kaleido",
+]
+    # docs requires 'tutorials'
+
+[tool.flake8]
+max-line-length = 88
