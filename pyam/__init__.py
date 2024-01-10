@@ -16,6 +16,7 @@ from pyam.core import (
 )
 from pyam.statistics import Statistics
 from pyam.iiasa import read_iiasa, lazy_read_iiasa  # noqa: F401
+from pyam.ixmp4 import read_ixmp4  # noqa: F401
 from pyam.datareader import read_worldbank  # noqa: F401
 from pyam.unfccc import read_unfccc  # noqa: F401
 from pyam.testing import assert_iamframe_equal  # noqa: F401
